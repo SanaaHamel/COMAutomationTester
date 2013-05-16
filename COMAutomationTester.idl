@@ -1,0 +1,85 @@
+// COMAutomationTester.idl : IDL source for COMAutomationTester
+//
+
+// This file will be processed by the MIDL tool to
+// produce the type library (COMAutomationTester.tlb) and marshalling code.
+
+#include "olectl.h"
+import "oaidl.idl";
+import "ocidl.idl";
+
+[
+	object,
+	uuid(a817e7a2-43fa-11d0-9e44-00aa00b6770a),
+	dual,	
+	pointer_default(unique)
+]
+interface IComponentRegistrar : IDispatch
+{
+	[id(1)]	HRESULT Attach([in] BSTR bstrPath);
+	[id(2)]	HRESULT RegisterAll();
+	[id(3)]	HRESULT UnregisterAll();
+	[id(4)]	HRESULT GetComponents([out] SAFEARRAY(BSTR)* pbstrCLSIDs, [out] SAFEARRAY(BSTR)* pbstrDescriptions);
+	[id(5)]	HRESULT RegisterComponent([in] BSTR bstrCLSID);
+	[id(6)] HRESULT UnregisterComponent([in] BSTR bstrCLSID);
+};
+
+[
+	object,
+	uuid(86F8D9DE-22B7-4E69-875F-6EFCC032FF48),
+	dual,
+	nonextensible,
+	pointer_default(unique)
+]
+interface IAutomationTester : IDispatch{
+	[propput, bindable, requestedit, id(DISPID_BACKCOLOR)]
+	HRESULT BackColor([in]OLE_COLOR clr);
+	[propget, bindable, requestedit, id(DISPID_BACKCOLOR)]
+	HRESULT BackColor([out,retval]OLE_COLOR* pclr);
+	[propputref, bindable, requestedit, id(DISPID_FONT)]
+	HRESULT Font([in]IFontDisp* pFont);
+	[propput, bindable, requestedit, id(DISPID_FONT)]
+	HRESULT Font([in]IFontDisp* pFont);
+	[propget, bindable, requestedit, id(DISPID_FONT)]
+	HRESULT Font([out, retval]IFontDisp** ppFont);
+	[propput, bindable, requestedit, id(DISPID_TEXT)]
+	HRESULT Text([in]BSTR strText);
+	[propget, bindable, requestedit, id(DISPID_TEXT)]
+	HRESULT Text([out, retval]BSTR* pstrText);
+};
+
+[
+	uuid(6A0B4B2F-B0B6-4737-ABA6-28CFCE775B1A),
+	version(1.0),
+	custom(a817e7a1-43fa-11d0-9e44-00aa00b6770a,"{C67BC795-F66A-4582-9135-C773695113D0}")
+]
+library COMAutomationTesterLib
+{
+	importlib("stdole2.tlb");
+	[
+		uuid(C67BC795-F66A-4582-9135-C773695113D0)		
+	]
+	coclass CompReg
+	{
+		[default] interface IComponentRegistrar;
+	};
+	[
+		uuid(3A96C846-F227-4B15-BCBB-179E376B1304)		
+	]
+	dispinterface _IAutomationTesterEvents
+	{
+		properties:
+		methods:
+	};
+	[
+		uuid(48BFFD4E-BC3B-45EE-92F6-009C55E4AAF7),		
+		licensed,
+		control
+	]
+	coclass AutomationTester
+	{
+		[default] interface IAutomationTester;
+		[default, source] dispinterface _IAutomationTesterEvents;
+	};
+};
+
