@@ -18,7 +18,7 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>DynamicLibrary</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v110</PlatformToolset>
+    <PlatformToolset>v110_xp</PlatformToolset>
     <UseOfAtl>Dynamic</UseOfAtl>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
@@ -75,7 +75,7 @@
     <Link>
       <SubSystem>Windows</SubSystem>
       <ModuleDefinitionFile>.\COMAutomationTester.def</ModuleDefinitionFile>
-      <AdditionalDependencies>comsvcs.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>comsvcs.lib;comsuppwd.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <RegisterOutput>true</RegisterOutput>
       <PerUserRedirection>true</PerUserRedirection>
@@ -109,7 +109,7 @@
     <Link>
       <SubSystem>Windows</SubSystem>
       <ModuleDefinitionFile>.\COMAutomationTester.def</ModuleDefinitionFile>
-      <AdditionalDependencies>comsvcs.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <AdditionalDependencies>comsvcs.lib;comsuppw.lib;%(AdditionalDependencies)</AdditionalDependencies>
       <GenerateDebugInformation>true</GenerateDebugInformation>
       <EnableCOMDATFolding>true</EnableCOMDATFolding>
       <OptimizeReferences>true</OptimizeReferences>

@@ -9,77 +9,185 @@ import "oaidl.idl";
 import "ocidl.idl";
 
 [
-	object,
-	uuid(a817e7a2-43fa-11d0-9e44-00aa00b6770a),
-	dual,	
-	pointer_default(unique)
+    object,
+    uuid(a817e7a2-43fa-11d0-9e44-00aa00b6770a),
+    dual,	
+    pointer_default(unique)
 ]
 interface IComponentRegistrar : IDispatch
 {
-	[id(1)]	HRESULT Attach([in] BSTR bstrPath);
-	[id(2)]	HRESULT RegisterAll();
-	[id(3)]	HRESULT UnregisterAll();
-	[id(4)]	HRESULT GetComponents([out] SAFEARRAY(BSTR)* pbstrCLSIDs, [out] SAFEARRAY(BSTR)* pbstrDescriptions);
-	[id(5)]	HRESULT RegisterComponent([in] BSTR bstrCLSID);
-	[id(6)] HRESULT UnregisterComponent([in] BSTR bstrCLSID);
+    [id(1)]	HRESULT Attach([in] BSTR bstrPath);
+    [id(2)]	HRESULT RegisterAll();
+    [id(3)]	HRESULT UnregisterAll();
+    [id(4)]	HRESULT GetComponents([out] SAFEARRAY(BSTR)* pbstrCLSIDs, [out] SAFEARRAY(BSTR)* pbstrDescriptions);
+    [id(5)]	HRESULT RegisterComponent([in] BSTR bstrCLSID);
+    [id(6)] HRESULT UnregisterComponent([in] BSTR bstrCLSID);
 };
 
 [
-	object,
-	uuid(86F8D9DE-22B7-4E69-875F-6EFCC032FF48),
-	dual,
-	nonextensible,
-	pointer_default(unique)
+    object,
+    uuid(86F8D9DE-22B7-4E69-875F-6EFCC032FF48),
+    dual,
+    nonextensible,
+    pointer_default(unique)
 ]
 interface IAutomationTester : IDispatch{
-	[propput, bindable, requestedit, id(DISPID_BACKCOLOR)]
-	HRESULT BackColor([in]OLE_COLOR clr);
-	[propget, bindable, requestedit, id(DISPID_BACKCOLOR)]
-	HRESULT BackColor([out,retval]OLE_COLOR* pclr);
-	[propputref, bindable, requestedit, id(DISPID_FONT)]
-	HRESULT Font([in]IFontDisp* pFont);
-	[propput, bindable, requestedit, id(DISPID_FONT)]
-	HRESULT Font([in]IFontDisp* pFont);
-	[propget, bindable, requestedit, id(DISPID_FONT)]
-	HRESULT Font([out, retval]IFontDisp** ppFont);
-	[propput, bindable, requestedit, id(DISPID_TEXT)]
-	HRESULT Text([in]BSTR strText);
-	[propget, bindable, requestedit, id(DISPID_TEXT)]
-	HRESULT Text([out, retval]BSTR* pstrText);
+    [propput, bindable, requestedit, id(DISPID_BACKCOLOR)]
+    HRESULT BackColor([in]OLE_COLOR clr);
+    [propget, bindable, requestedit, id(DISPID_BACKCOLOR)]
+    HRESULT BackColor([out,retval]OLE_COLOR* pclr);
+    [propputref, bindable, requestedit, id(DISPID_FONT)]
+    HRESULT Font([in]IFontDisp* pFont);
+    [propput, bindable, requestedit, id(DISPID_FONT)]
+    HRESULT Font([in]IFontDisp* pFont);
+    [propget, bindable, requestedit, id(DISPID_FONT)]
+    HRESULT Font([out, retval]IFontDisp** ppFont);
+    [propput, bindable, requestedit, id(DISPID_TEXT)]
+    HRESULT Text([in]BSTR strText);
+    [propget, bindable, requestedit, id(DISPID_TEXT)]
+    HRESULT Text([out, retval]BSTR* pstrText);
+    [propget, id(1)] HRESULT PropBSTR       ([out, retval] BSTR        * pVal  );
+    [propput, id(1)] HRESULT PropBSTR       ([in]          BSTR          newVal);
+    [propget, id(2)] HRESULT PropBYTE       ([out, retval] BYTE        * pVal  );
+    [propput, id(2)] HRESULT PropBYTE       ([in]          BYTE          newVal);
+    [propget, id(3)] HRESULT PropCHAR       ([out, retval] CHAR        * pVal  );
+    [propput, id(3)] HRESULT PropCHAR       ([in]          CHAR          newVal);
+    [propget, id(4)] HRESULT PropCY         ([out, retval] CY          * pVal  );
+    [propput, id(4)] HRESULT PropCY         ([in]          CY            newVal);
+    [propget, id(5)] HRESULT PropDATE       ([out, retval] DATE        * pVal  );
+    [propput, id(5)] HRESULT PropDATE       ([in]          DATE          newVal);
+    [propget, id(6)] HRESULT PropDECIMAL    ([out, retval] DECIMAL     * pVal  );
+    [propput, id(6)] HRESULT PropDECIMAL    ([in]          DECIMAL       newVal);
+    [propget, id(7)] HRESULT PropDOUBLE     ([out, retval] DOUBLE      * pVal  );
+    [propput, id(7)] HRESULT PropDOUBLE     ([in]          DOUBLE        newVal);
+    [propget, id(8)] HRESULT PropFLOAT      ([out, retval] FLOAT       * pVal  );
+    [propput, id(8)] HRESULT PropFLOAT      ([in]          FLOAT         newVal);
+    [propget, id(9)] HRESULT PropLONG       ([out, retval] LONG        * pVal  );
+    [propput, id(9)] HRESULT PropLONG       ([in]          LONG          newVal);
+    [propget, id(10)] HRESULT PropLONGLONG   ([out, retval] LONGLONG    * pVal  );
+    [propput, id(10)] HRESULT PropLONGLONG   ([in]          LONGLONG      newVal);
+    [propget, id(11)] HRESULT PropSCODE      ([out, retval] SCODE       * pVal  );
+    [propput, id(11)] HRESULT PropSCODE      ([in]          SCODE         newVal);
+    [propget, id(12)] HRESULT PropSHORT      ([out, retval] SHORT       * pVal  );
+    [propput, id(12)] HRESULT PropSHORT      ([in]          SHORT         newVal);
+    [propget, id(13)] HRESULT PropULONG      ([out, retval] ULONG       * pVal  );
+    [propput, id(13)] HRESULT PropULONG      ([in]          ULONG         newVal);
+    [propget, id(14)] HRESULT PropULONGLONG  ([out, retval] ULONGLONG   * pVal  );
+    [propput, id(14)] HRESULT PropULONGLONG  ([in]          ULONGLONG     newVal);
+    [propget, id(15)] HRESULT PropUSHORT     ([out, retval] USHORT      * pVal  );
+    [propput, id(15)] HRESULT PropUSHORT     ([in]          USHORT        newVal);
+    [propget, id(16)] HRESULT PropVARIANTBOOL([out, retval] VARIANT_BOOL* pVal  );
+    [propput, id(16)] HRESULT PropVARIANTBOOL([in]          VARIANT_BOOL  newVal);
+    [propget, id(17)] HRESULT PropDISPATCH   ([out, retval] IDispatch*  * pVal  );
+    [propput, id(17)] HRESULT PropDISPATCH   ([in]          IDispatch*    newVal);
+    [propget, id(18)] HRESULT PropUNKNOWN    ([out, retval] IUnknown*   * pVal  );
+    [propput, id(18)] HRESULT PropUNKNOWN    ([in]          IUnknown*     newVal);
+    [propget, id(19)] HRESULT PropAryBSTR       ([out, retval] SAFEARRAY(BSTR        )* pVal  );
+    [propput, id(19)] HRESULT PropAryBSTR       ([in]          SAFEARRAY(BSTR        )  newVal);
+    [propget, id(20)] HRESULT PropAryBYTE       ([out, retval] SAFEARRAY(BYTE        )* pVal  );
+    [propput, id(20)] HRESULT PropAryBYTE       ([in]          SAFEARRAY(BYTE        )  newVal);
+    [propget, id(21)] HRESULT PropAryCHAR       ([out, retval] SAFEARRAY(CHAR        )* pVal  );
+    [propput, id(21)] HRESULT PropAryCHAR       ([in]          SAFEARRAY(CHAR        )  newVal);
+    [propget, id(22)] HRESULT PropAryCY         ([out, retval] SAFEARRAY(CY          )* pVal  );
+    [propput, id(22)] HRESULT PropAryCY         ([in]          SAFEARRAY(CY          )  newVal);
+    [propget, id(23)] HRESULT PropAryDATE       ([out, retval] SAFEARRAY(DATE        )* pVal  );
+    [propput, id(23)] HRESULT PropAryDATE       ([in]          SAFEARRAY(DATE        )  newVal);
+    [propget, id(24)] HRESULT PropAryDECIMAL    ([out, retval] SAFEARRAY(DECIMAL     )* pVal  );
+    [propput, id(24)] HRESULT PropAryDECIMAL    ([in]          SAFEARRAY(DECIMAL     )  newVal);
+    [propget, id(25)] HRESULT PropAryDOUBLE     ([out, retval] SAFEARRAY(DOUBLE      )* pVal  );
+    [propput, id(25)] HRESULT PropAryDOUBLE     ([in]          SAFEARRAY(DOUBLE      )  newVal);
+    [propget, id(26)] HRESULT PropAryFLOAT      ([out, retval] SAFEARRAY(FLOAT       )* pVal  );
+    [propput, id(26)] HRESULT PropAryFLOAT      ([in]          SAFEARRAY(FLOAT       )  newVal);
+    [propget, id(27)] HRESULT PropAryLONG       ([out, retval] SAFEARRAY(LONG        )* pVal  );
+    [propput, id(27)] HRESULT PropAryLONG       ([in]          SAFEARRAY(LONG        )  newVal);
+    [propget, id(28)] HRESULT PropAryLONGLONG   ([out, retval] SAFEARRAY(LONGLONG    )* pVal  );
+    [propput, id(28)] HRESULT PropAryLONGLONG   ([in]          SAFEARRAY(LONGLONG    )  newVal);
+    [propget, id(29)] HRESULT PropArySCODE      ([out, retval] SAFEARRAY(SCODE       )* pVal  );
+    [propput, id(29)] HRESULT PropArySCODE      ([in]          SAFEARRAY(SCODE       )  newVal);
+    [propget, id(30)] HRESULT PropArySHORT      ([out, retval] SAFEARRAY(SHORT       )* pVal  );
+    [propput, id(30)] HRESULT PropArySHORT      ([in]          SAFEARRAY(SHORT       )  newVal);
+    [propget, id(31)] HRESULT PropAryULONG      ([out, retval] SAFEARRAY(ULONG       )* pVal  );
+    [propput, id(31)] HRESULT PropAryULONG      ([in]          SAFEARRAY(ULONG       )  newVal);
+    [propget, id(32)] HRESULT PropAryULONGLONG  ([out, retval] SAFEARRAY(ULONGLONG   )* pVal  );
+    [propput, id(32)] HRESULT PropAryULONGLONG  ([in]          SAFEARRAY(ULONGLONG   )  newVal);
+    [propget, id(33)] HRESULT PropAryUSHORT     ([out, retval] SAFEARRAY(USHORT      )* pVal  );
+    [propput, id(33)] HRESULT PropAryUSHORT     ([in]          SAFEARRAY(USHORT      )  newVal);
+    [propget, id(34)] HRESULT PropAryVARIANTBOOL([out, retval] SAFEARRAY(VARIANT_BOOL)* pVal  );
+    [propput, id(34)] HRESULT PropAryVARIANTBOOL([in]          SAFEARRAY(VARIANT_BOOL)  newVal);
+    [propget, id(35)] HRESULT PropAryDISPATCH   ([out, retval] SAFEARRAY(IDispatch*  )* pVal  );
+    [propput, id(35)] HRESULT PropAryDISPATCH   ([in]          SAFEARRAY(IDispatch*  )  newVal);
+    [propget, id(36)] HRESULT PropAryUNKNOWN    ([out, retval] SAFEARRAY(IUnknown*   )* pVal  );
+    [propput, id(36)] HRESULT PropAryUNKNOWN    ([in]          SAFEARRAY(IUnknown*   )  newVal);
+    [id(37)] HRESULT testBSTR       (BSTR         valIn, BSTR        * refIn, [in,out] BSTR        * refInOut, [out,retval] BSTR        * refRet);
+    [id(38)] HRESULT testBYTE       (BYTE         valIn, BYTE        * refIn, [in,out] BYTE        * refInOut, [out,retval] BYTE        * refRet);
+    [id(39)] HRESULT testCHAR       (CHAR         valIn, CHAR        * refIn, [in,out] CHAR        * refInOut, [out,retval] CHAR        * refRet);
+    [id(40)] HRESULT testCY         (CY           valIn, CY          * refIn, [in,out] CY          * refInOut, [out,retval] CY          * refRet);
+    [id(41)] HRESULT testDATE       (DATE         valIn, DATE        * refIn, [in,out] DATE        * refInOut, [out,retval] DATE        * refRet);
+    [id(42)] HRESULT testDECIMAL    (DECIMAL      valIn, DECIMAL     * refIn, [in,out] DECIMAL     * refInOut, [out,retval] DECIMAL     * refRet);
+    [id(43)] HRESULT testDOUBLE     (DOUBLE       valIn, DOUBLE      * refIn, [in,out] DOUBLE      * refInOut, [out,retval] DOUBLE      * refRet);
+    [id(44)] HRESULT testFLOAT      (FLOAT        valIn, FLOAT       * refIn, [in,out] FLOAT       * refInOut, [out,retval] FLOAT       * refRet);
+    [id(45)] HRESULT testLONG       (LONG         valIn, LONG        * refIn, [in,out] LONG        * refInOut, [out,retval] LONG        * refRet);
+    [id(46)] HRESULT testLONGLONG   (LONGLONG     valIn, LONGLONG    * refIn, [in,out] LONGLONG    * refInOut, [out,retval] LONGLONG    * refRet);
+    [id(47)] HRESULT testSCODE      (SCODE        valIn, SCODE       * refIn, [in,out] SCODE       * refInOut, [out,retval] SCODE       * refRet);
+    [id(48)] HRESULT testSHORT      (SHORT        valIn, SHORT       * refIn, [in,out] SHORT       * refInOut, [out,retval] SHORT       * refRet);
+    [id(49)] HRESULT testULONG      (ULONG        valIn, ULONG       * refIn, [in,out] ULONG       * refInOut, [out,retval] ULONG       * refRet);
+    [id(50)] HRESULT testULONGLONG  (ULONGLONG    valIn, ULONGLONG   * refIn, [in,out] ULONGLONG   * refInOut, [out,retval] ULONGLONG   * refRet);
+    [id(51)] HRESULT testUSHORT     (USHORT       valIn, USHORT      * refIn, [in,out] USHORT      * refInOut, [out,retval] USHORT      * refRet);
+    [id(52)] HRESULT testVARIANTBOOL(VARIANT_BOOL valIn, VARIANT_BOOL* refIn, [in,out] VARIANT_BOOL* refInOut, [out,retval] VARIANT_BOOL* refRet);
+    [id(53)] HRESULT testDISPATCH   (IDispatch*   valIn, IDispatch*  * refIn, [in,out] IDispatch*  * refInOut, [out,retval] IDispatch*  * refRet);
+    [id(54)] HRESULT testUNKNOWN    (IUnknown*    valIn, IUnknown*   * refIn, [in,out] IUnknown*   * refInOut, [out,retval] IUnknown*   * refRet);
+    [id(55)] HRESULT testAryBSTR       (SAFEARRAY(BSTR        ) valIn, SAFEARRAY(BSTR        )* refIn, [in,out] SAFEARRAY(BSTR        )* refInOut, [out,retval] SAFEARRAY(BSTR        )* refRet);
+    [id(56)] HRESULT testAryBYTE       (SAFEARRAY(BYTE        ) valIn, SAFEARRAY(BYTE        )* refIn, [in,out] SAFEARRAY(BYTE        )* refInOut, [out,retval] SAFEARRAY(BYTE        )* refRet);
+    [id(57)] HRESULT testAryCHAR       (SAFEARRAY(CHAR        ) valIn, SAFEARRAY(CHAR        )* refIn, [in,out] SAFEARRAY(CHAR        )* refInOut, [out,retval] SAFEARRAY(CHAR        )* refRet);
+    [id(58)] HRESULT testAryCY         (SAFEARRAY(CY          ) valIn, SAFEARRAY(CY          )* refIn, [in,out] SAFEARRAY(CY          )* refInOut, [out,retval] SAFEARRAY(CY          )* refRet);
+    [id(59)] HRESULT testAryDATE       (SAFEARRAY(DATE        ) valIn, SAFEARRAY(DATE        )* refIn, [in,out] SAFEARRAY(DATE        )* refInOut, [out,retval] SAFEARRAY(DATE        )* refRet);
+    [id(60)] HRESULT testAryDECIMAL    (SAFEARRAY(DECIMAL     ) valIn, SAFEARRAY(DECIMAL     )* refIn, [in,out] SAFEARRAY(DECIMAL     )* refInOut, [out,retval] SAFEARRAY(DECIMAL     )* refRet);
+    [id(61)] HRESULT testAryDOUBLE     (SAFEARRAY(DOUBLE      ) valIn, SAFEARRAY(DOUBLE      )* refIn, [in,out] SAFEARRAY(DOUBLE      )* refInOut, [out,retval] SAFEARRAY(DOUBLE      )* refRet);
+    [id(62)] HRESULT testAryFLOAT      (SAFEARRAY(FLOAT       ) valIn, SAFEARRAY(FLOAT       )* refIn, [in,out] SAFEARRAY(FLOAT       )* refInOut, [out,retval] SAFEARRAY(FLOAT       )* refRet);
+    [id(63)] HRESULT testAryLONG       (SAFEARRAY(LONG        ) valIn, SAFEARRAY(LONG        )* refIn, [in,out] SAFEARRAY(LONG        )* refInOut, [out,retval] SAFEARRAY(LONG        )* refRet);
+    [id(64)] HRESULT testAryLONGLONG   (SAFEARRAY(LONGLONG    ) valIn, SAFEARRAY(LONGLONG    )* refIn, [in,out] SAFEARRAY(LONGLONG    )* refInOut, [out,retval] SAFEARRAY(LONGLONG    )* refRet);
+    [id(65)] HRESULT testArySCODE      (SAFEARRAY(SCODE       ) valIn, SAFEARRAY(SCODE       )* refIn, [in,out] SAFEARRAY(SCODE       )* refInOut, [out,retval] SAFEARRAY(SCODE       )* refRet);
+    [id(66)] HRESULT testArySHORT      (SAFEARRAY(SHORT       ) valIn, SAFEARRAY(SHORT       )* refIn, [in,out] SAFEARRAY(SHORT       )* refInOut, [out,retval] SAFEARRAY(SHORT       )* refRet);
+    [id(67)] HRESULT testAryULONG      (SAFEARRAY(ULONG       ) valIn, SAFEARRAY(ULONG       )* refIn, [in,out] SAFEARRAY(ULONG       )* refInOut, [out,retval] SAFEARRAY(ULONG       )* refRet);
+    [id(68)] HRESULT testAryULONGLONG  (SAFEARRAY(ULONGLONG   ) valIn, SAFEARRAY(ULONGLONG   )* refIn, [in,out] SAFEARRAY(ULONGLONG   )* refInOut, [out,retval] SAFEARRAY(ULONGLONG   )* refRet);
+    [id(69)] HRESULT testAryUSHORT     (SAFEARRAY(USHORT      ) valIn, SAFEARRAY(USHORT      )* refIn, [in,out] SAFEARRAY(USHORT      )* refInOut, [out,retval] SAFEARRAY(USHORT      )* refRet);
+    [id(70)] HRESULT testAryVARIANTBOOL(SAFEARRAY(VARIANT_BOOL) valIn, SAFEARRAY(VARIANT_BOOL)* refIn, [in,out] SAFEARRAY(VARIANT_BOOL)* refInOut, [out,retval] SAFEARRAY(VARIANT_BOOL)* refRet);
+    [id(71)] HRESULT testAryDISPATCH   (SAFEARRAY(IDispatch*  ) valIn, SAFEARRAY(IDispatch*  )* refIn, [in,out] SAFEARRAY(IDispatch*  )* refInOut, [out,retval] SAFEARRAY(IDispatch*  )* refRet);
+    [id(72)] HRESULT testAryUNKNOWN    (SAFEARRAY(IUnknown*   ) valIn, SAFEARRAY(IUnknown*   )* refIn, [in,out] SAFEARRAY(IUnknown*   )* refInOut, [out,retval] SAFEARRAY(IUnknown*   )* refRet);
 };
 
 [
-	uuid(6A0B4B2F-B0B6-4737-ABA6-28CFCE775B1A),
-	version(1.0),
-	custom(a817e7a1-43fa-11d0-9e44-00aa00b6770a,"{C67BC795-F66A-4582-9135-C773695113D0}")
+    uuid(6A0B4B2F-B0B6-4737-ABA6-28CFCE775B1A),
+    version(1.0),
+    custom(a817e7a1-43fa-11d0-9e44-00aa00b6770a,"{C67BC795-F66A-4582-9135-C773695113D0}")
 ]
 library COMAutomationTesterLib
 {
-	importlib("stdole2.tlb");
-	[
-		uuid(C67BC795-F66A-4582-9135-C773695113D0)		
-	]
-	coclass CompReg
-	{
-		[default] interface IComponentRegistrar;
-	};
-	[
-		uuid(3A96C846-F227-4B15-BCBB-179E376B1304)		
-	]
-	dispinterface _IAutomationTesterEvents
-	{
-		properties:
-		methods:
-	};
-	[
-		uuid(48BFFD4E-BC3B-45EE-92F6-009C55E4AAF7),		
-		licensed,
-		control
-	]
-	coclass AutomationTester
-	{
-		[default] interface IAutomationTester;
-		[default, source] dispinterface _IAutomationTesterEvents;
-	};
+    importlib("stdole2.tlb");
+    [
+        uuid(C67BC795-F66A-4582-9135-C773695113D0)		
+    ]
+    coclass CompReg
+    {
+        [default] interface IComponentRegistrar;
+    };
+    [
+        uuid(3A96C846-F227-4B15-BCBB-179E376B1304)		
+    ]
+    dispinterface _IAutomationTesterEvents
+    {
+        properties:
+        methods:
+    };
+    [
+        uuid(48BFFD4E-BC3B-45EE-92F6-009C55E4AAF7),		
+        licensed,
+        control
+    ]
+    coclass AutomationTester
+    {
+        [default] interface IAutomationTester;
+        [default, source] dispinterface _IAutomationTesterEvents;
+    };
 };
 
