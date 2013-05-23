@@ -8,8 +8,8 @@
 
 
 #if _MSC_BUILD
-    #define PRINTF_I64 L"%i64"
-    #define PRINTF_UI64 L"%i64u"
+    #define PRINTF_I64 L"%l64"
+    #define PRINTF_UI64 L"%l64u"
 #else
     #error Add correct printf int64/uint64 for your compiler
 #endif
@@ -219,7 +219,7 @@ STDMETHODIMP AutomationTester::testBSTR(BSTR valIn, BSTR* refIn, BSTR* refInOut,
     
     TextAppend(L"\tvalIn:\t[["  ); TextAppend( valIn   ); TextAppend(L"]]");
     TextAppend(L"\trefIn:\t[["  ); TextAppend(*refIn   ); TextAppend(L"]]");
-    TextAppend(L"\refInOut:\t[["); TextAppend(*refInOut); TextAppend(L"]]");
+    TextAppend(L"\trefInOut:\t[["); TextAppend(*refInOut); TextAppend(L"]]");
     if (wcscmp(valIn, *refIn) &&
         (!Ensure(TextAppend(L"\tWARN: valIn != refIn")))) return E_FAIL;
     
@@ -338,7 +338,6 @@ STDMETHODIMP AutomationTester::testDECIMAL(DECIMAL valIn, DECIMAL* refIn, DECIMA
         (!Ensure(TextAppend(L"\tWARN: valIn != refIn")))) return E_FAIL;
     
     DECIMAL decTwo = {0, {0, 0}, 0, {2, 0}}, decOut;
-    __debugbreak();
     VarDecDiv(refInOut, &decTwo, refRet );
     VarDecMul(refInOut, &decTwo, &decOut);
     
@@ -372,7 +371,7 @@ STDMETHODIMP AutomationTester::testFLOAT(FLOAT valIn, FLOAT* refIn, FLOAT* refIn
 {
     wchar_t buffer[0x1ff];
     TextAppend(L"");
-    TextAppend(L"testDOUBLE:");
+    TextAppend(L"testFLOAT:");
     
     safe_swprintf(buffer, L"\tvalIn:\t%E"   , (double) valIn   );
     if (!Ensure(TextAppend(buffer))) return E_FAIL;
