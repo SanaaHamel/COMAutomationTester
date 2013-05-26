@@ -14,16 +14,16 @@ local propAryDecl   = "STDMETHOD(get_PropAry|)(SAFEARRAY/*(^)*/** pVal  );\n" ..
 local funcDecl      = "STDMETHOD(test|)(^ valIn, ^* refIn, ^* refInOut, ^* refRet);"
 local funcAryDecl   = "STDMETHOD(testAry|)(SAFEARRAY/*(^)*/* valIn, SAFEARRAY/*(^)*/** refIn, SAFEARRAY/*(^)*/** refInOut, SAFEARRAY/*(^)*/** refRet);"
 local propMember    = "^ _prop|;"
-local propAryMember = "SAFEARRAY/*(^)*/* _propAry|;"
+local propAryMember = "CComSafeArray<^> _propAry|;"
 local propImplGetSimple = "STDMETHODIMP AutomationTester::get_Prop|(^* pVal) { *pVal = _prop|; return S_OK; }"
 local propImplGetObject = "STDMETHODIMP AutomationTester::get_Prop|(^* pVal) { if (_prop|) _prop|->AddRef(); *pVal = _prop|; return S_OK; }"
-local propImplGetArray  = "STDMETHODIMP AutomationTester::get_PropAry|(SAFEARRAY/*(^)*/** pVal  ) { return PropArrayGet(_propAry|, $, pVal); }"
+local propImplGetArray  = "STDMETHODIMP AutomationTester::get_PropAry|(SAFEARRAY/*(^)*/** pVal  ) { return PropArrayGet(_propAry|, pVal); }"
 local propImplSetSimple = "STDMETHODIMP AutomationTester::put_Prop|(^ newVal) { _prop| = newVal; return S_OK; }"
 local propImplSetObject = "STDMETHODIMP AutomationTester::put_Prop|(^ newVal)\n" ..
                           "{ if (_prop|) _prop|->Release();\n" ..
                           "  if (newVal) newVal->AddRef();\n"  ..
                           "  _prop| = newVal; return S_OK; }"
-local propImplSetArray  = "STDMETHODIMP AutomationTester::put_PropAry|(SAFEARRAY/*(^)*/*  newVal) { return PropArrayPut(_propAry|, $, newVal); }"
+local propImplSetArray  = "STDMETHODIMP AutomationTester::put_PropAry|(SAFEARRAY/*(^)*/*  newVal) { return PropArrayPut(_propAry|, newVal); }"
 local funcImpl       = "STDMETHODIMP AutomationTester::test|(^ valIn, ^* refIn, ^* refInOut, ^* refRet) { return E_NOTIMPL; }"
 local funcAryImpl    = "STDMETHODIMP AutomationTester::testAry|(SAFEARRAY/*(^)*/* valIn, SAFEARRAY/*(^)*/** refIn, SAFEARRAY/*(^)*/** refInOut, SAFEARRAY/*(^)*/** refRet) { return E_NOTIMPL; }"
 local propMemInitNum = "                                     , _prop|(0)"
@@ -69,9 +69,9 @@ local function ApplyPadding(t)
     for _, s in ipairs(t) do n    = math.max(n, #s)  end
     for _, s in ipairs(t) do t[_] = s .. (" "):rep(n - #s) end
 end
---ApplyPadding(types)
---ApplyPadding(typeprefix)
---ApplyPadding(typesVT)
+ApplyPadding(types)
+ApplyPadding(typeprefix)
+ApplyPadding(typesVT)
 
 for k, v in ipairs(typesDispatch) do typesDispatch[v] = k    end -- Convert dispatch array to map
 for k, v in ipairs(types        ) do typesVT[v] = typesVT[k] end -- Convert typesVT array to map
@@ -113,7 +113,7 @@ local tblFormats  = {idlProp --< IDL
                     ,propMemInitAry
                     ,function(...) return FmtPointer  (propMemDtorPtr   , "", ...) end
                     ,function(...) return FmtSafeArray(propMemDtorAry   ,     ...) end}
-tblFormats = {testCaseDBase, testCaseDBaseInvoke}
+--tblFormats = {testCaseDBase, testCaseDBaseInvoke}
 local iID = iBaseID
 for _, fmt in pairs(tblFormats) do
     for k, t in pairs(types) do

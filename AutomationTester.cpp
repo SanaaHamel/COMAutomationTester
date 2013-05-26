@@ -3,13 +3,18 @@
 #include "AutomationTester.h"
 
 #include <comutil.h>
+
 #include <cassert>
+
+#undef min
+#undef max
 #include <algorithm>
+#include <type_traits>
 
 
 #if _MSC_BUILD
-    #define PRINTF_I64 L"%l64"
-    #define PRINTF_UI64 L"%l64u"
+    #define PRINTF_I64 L"%I64i"
+    #define PRINTF_UI64 L"%I64u"
 #else
     #error Add correct printf int64/uint64 for your compiler
 #endif
@@ -32,30 +37,31 @@ namespace {
         buffer[sBufferLen - 1] = L'\0';
     }
 
-    HRESULT PropArrayGet(SAFEARRAY*& ary, VARTYPE const vt, SAFEARRAY** out_ary)
+    template<typename T>
+    HRESULT PropArrayGet(CComSafeArray<T>& ary, SAFEARRAY** out_ary)
     {
         if (!out_ary) return E_INVALIDARG;
-        if ( ary    ) return SafeArrayCopy(ary, out_ary);
+        if ( ary    ) return ary.CopyTo(out_ary);
         
         // Play around with the lower bound. According to specs it shouldn't matter, but it might
         // trip faulty client code.
-        *out_ary = SafeArrayCreateVector(vt, rand(), 0);
-        return *out_ary ? S_OK : E_FAIL;
+        CComSafeArrayBound bounds(0u, rand());
+        CComSafeArray<T> aryNew;
+        auto const hr = aryNew.Create(&bounds);
+        if (!Ensure(hr)) return hr;
+        
+        *out_ary = aryNew.Detach();
+        return S_OK;
     }
     
-    HRESULT PropArrayPut(SAFEARRAY*& ary, VARTYPE const /*vt*/, SAFEARRAY*& in_ary)
-    {
-        if (!in_ary) return E_INVALIDARG;
-        if (ary) {
-            auto const hr = SafeArrayDestroy(ary);
-            if (!Ensure(hr)) return hr;
-        }
-        
-        auto const hr = SafeArrayCopy(in_ary, &ary);
-        Ensure(hr);
-        
-        return hr;
-    }
+    template<typename T>
+    HRESULT PropArrayPut(CComSafeArray<T>& ary, SAFEARRAY*& in_ary)
+    { return ary.CopyFrom(in_ary); }
+    
+    template<typename T>
+    void PropArrayAddMinMax(CComSafeArray<T>& ary)
+    { ary.Add(std::numeric_limits<T>::min());
+      ary.Add(std::numeric_limits<T>::max());}
 }
 
 
@@ -78,27 +84,36 @@ AutomationTester::AutomationTester() : m_ctlEdit(_T("Edit"), this, 1)
                                      , _propVARIANTBOOL(0)
                                      , _propDISPATCH   (nullptr)
                                      , _propUNKNOWN    (nullptr)
-                                     , _propAryBSTR       (nullptr)
-                                     , _propAryBYTE       (nullptr)
-                                     , _propAryCHAR       (nullptr)
-                                     , _propAryCY         (nullptr)
-                                     , _propAryDATE       (nullptr)
-                                     , _propAryDECIMAL    (nullptr)
-                                     , _propAryDOUBLE     (nullptr)
-                                     , _propAryFLOAT      (nullptr)
-                                     , _propAryLONG       (nullptr)
-                                     , _propAryLONGLONG   (nullptr)
-                                     , _propArySCODE      (nullptr)
-                                     , _propArySHORT      (nullptr)
-                                     , _propAryULONG      (nullptr)
-                                     , _propAryULONGLONG  (nullptr)
-                                     , _propAryUSHORT     (nullptr)
-                                     , _propAryVARIANTBOOL(nullptr)
-                                     , _propAryDISPATCH   (nullptr)
-                                     , _propAryUNKNOWN    (nullptr)
 {
     memset(&_propCY     , 0, sizeof(_propCY     ));
     memset(&_propDECIMAL, 0, sizeof(_propDECIMAL));
+    
+    CY      cyMin ; cyMin .int64 = std::numeric_limits<LONGLONG>::min();
+    CY      cyMax ; cyMax .int64 = std::numeric_limits<LONGLONG>::max();
+    DECIMAL decMin; decMin.scale = 0; decMin.sign = 1; decMin.Hi32 = 0xFFFFFFFF; decMin.Lo64 = 0xFFFFFFFFFFFFFFFF;
+    DECIMAL decMax = decMin; decMax.sign = 0;
+    DECIMAL decNearZero; decNearZero.scale = 28; decNearZero.sign = 0; decNearZero.Hi32 = 0; decNearZero.Lo64 = 1;
+    
+    _bstr_t bstr = L"Many threats to security can only be defeated from inside. Your mind shall be carefully blanked, and conditioned with the nature and past of a criminal. Join with the criminal and rebellious, endure their squalor and chaos, and then, when it is time, liquidate them from within.";
+    _propAryBSTR.Add(bstr);
+    
+    PropArrayAddMinMax(_propAryBYTE);
+    PropArrayAddMinMax(_propAryCHAR);
+    _propAryCY.Add(cyMin); _propAryCY.Add(cyMax);
+    //PropArrayAddMinMax(_propAryDATE);
+    _propAryDECIMAL.Add(decMin); _propAryDECIMAL.Add(decMax); _propAryDECIMAL.Add(decNearZero);
+    //PropArrayAddMinMax(_propAryDISPATCH);
+    PropArrayAddMinMax(_propAryDOUBLE);
+    PropArrayAddMinMax(_propAryFLOAT);
+    PropArrayAddMinMax(_propAryLONG);
+    PropArrayAddMinMax(_propAryLONGLONG);
+    PropArrayAddMinMax(_propArySCODE);
+    PropArrayAddMinMax(_propArySHORT);
+    PropArrayAddMinMax(_propAryULONG);
+    PropArrayAddMinMax(_propAryULONGLONG);
+    //PropArrayAddMinMax(_propAryUNKNOWN);
+    PropArrayAddMinMax(_propAryUSHORT);
+    _propAryVARIANTBOOL.Add((SHORT)0); _propAryVARIANTBOOL.Add(-1);
     
     m_bWindowOnly = TRUE;
 }
@@ -108,24 +123,6 @@ AutomationTester::~AutomationTester()
 {
     if (_propDISPATCH   ) _propDISPATCH   ->Release(); _propDISPATCH    = nullptr;
     if (_propUNKNOWN    ) _propUNKNOWN    ->Release(); _propUNKNOWN     = nullptr;
-    if (_propAryBSTR       ) Ensure(SafeArrayDestroy(_propAryBSTR       )); _propAryBSTR        = nullptr;
-    if (_propAryBYTE       ) Ensure(SafeArrayDestroy(_propAryBYTE       )); _propAryBYTE        = nullptr;
-    if (_propAryCHAR       ) Ensure(SafeArrayDestroy(_propAryCHAR       )); _propAryCHAR        = nullptr;
-    if (_propAryCY         ) Ensure(SafeArrayDestroy(_propAryCY         )); _propAryCY          = nullptr;
-    if (_propAryDATE       ) Ensure(SafeArrayDestroy(_propAryDATE       )); _propAryDATE        = nullptr;
-    if (_propAryDECIMAL    ) Ensure(SafeArrayDestroy(_propAryDECIMAL    )); _propAryDECIMAL     = nullptr;
-    if (_propAryDOUBLE     ) Ensure(SafeArrayDestroy(_propAryDOUBLE     )); _propAryDOUBLE      = nullptr;
-    if (_propAryFLOAT      ) Ensure(SafeArrayDestroy(_propAryFLOAT      )); _propAryFLOAT       = nullptr;
-    if (_propAryLONG       ) Ensure(SafeArrayDestroy(_propAryLONG       )); _propAryLONG        = nullptr;
-    if (_propAryLONGLONG   ) Ensure(SafeArrayDestroy(_propAryLONGLONG   )); _propAryLONGLONG    = nullptr;
-    if (_propArySCODE      ) Ensure(SafeArrayDestroy(_propArySCODE      )); _propArySCODE       = nullptr;
-    if (_propArySHORT      ) Ensure(SafeArrayDestroy(_propArySHORT      )); _propArySHORT       = nullptr;
-    if (_propAryULONG      ) Ensure(SafeArrayDestroy(_propAryULONG      )); _propAryULONG       = nullptr;
-    if (_propAryULONGLONG  ) Ensure(SafeArrayDestroy(_propAryULONGLONG  )); _propAryULONGLONG   = nullptr;
-    if (_propAryUSHORT     ) Ensure(SafeArrayDestroy(_propAryUSHORT     )); _propAryUSHORT      = nullptr;
-    if (_propAryVARIANTBOOL) Ensure(SafeArrayDestroy(_propAryVARIANTBOOL)); _propAryVARIANTBOOL = nullptr;
-    if (_propAryDISPATCH   ) Ensure(SafeArrayDestroy(_propAryDISPATCH   )); _propAryDISPATCH    = nullptr;
-    if (_propAryUNKNOWN    ) Ensure(SafeArrayDestroy(_propAryUNKNOWN    )); _propAryUNKNOWN     = nullptr;
 }
 
 STDMETHODIMP AutomationTester::get_PropBSTR       (BSTR        * pVal) { *pVal = _propBSTR       ; return S_OK; }
@@ -147,24 +144,24 @@ STDMETHODIMP AutomationTester::get_PropVARIANTBOOL(VARIANT_BOOL* pVal) { *pVal =
 STDMETHODIMP AutomationTester::get_PropDISPATCH   (IDispatch*  * pVal) { if (_propDISPATCH   ) _propDISPATCH   ->AddRef(); *pVal = _propDISPATCH   ; return S_OK; }
 STDMETHODIMP AutomationTester::get_PropUNKNOWN    (IUnknown*   * pVal) { if (_propUNKNOWN    ) _propUNKNOWN    ->AddRef(); *pVal = _propUNKNOWN    ; return S_OK; }
 
-STDMETHODIMP AutomationTester::get_PropAryBSTR       (SAFEARRAY/*(BSTR        )*/** pVal  ) { return PropArrayGet(_propAryBSTR       , VT_BSTR    , pVal); }
-STDMETHODIMP AutomationTester::get_PropAryBYTE       (SAFEARRAY/*(BYTE        )*/** pVal  ) { return PropArrayGet(_propAryBYTE       , VT_UI1     , pVal); }
-STDMETHODIMP AutomationTester::get_PropAryCHAR       (SAFEARRAY/*(CHAR        )*/** pVal  ) { return PropArrayGet(_propAryCHAR       , VT_I1      , pVal); }
-STDMETHODIMP AutomationTester::get_PropAryCY         (SAFEARRAY/*(CY          )*/** pVal  ) { return PropArrayGet(_propAryCY         , VT_CY      , pVal); }
-STDMETHODIMP AutomationTester::get_PropAryDATE       (SAFEARRAY/*(DATE        )*/** pVal  ) { return PropArrayGet(_propAryDATE       , VT_DATE    , pVal); }
-STDMETHODIMP AutomationTester::get_PropAryDECIMAL    (SAFEARRAY/*(DECIMAL     )*/** pVal  ) { return PropArrayGet(_propAryDECIMAL    , VT_DECIMAL , pVal); }
-STDMETHODIMP AutomationTester::get_PropAryDOUBLE     (SAFEARRAY/*(DOUBLE      )*/** pVal  ) { return PropArrayGet(_propAryDOUBLE     , VT_R8      , pVal); }
-STDMETHODIMP AutomationTester::get_PropAryFLOAT      (SAFEARRAY/*(FLOAT       )*/** pVal  ) { return PropArrayGet(_propAryFLOAT      , VT_R4      , pVal); }
-STDMETHODIMP AutomationTester::get_PropAryLONG       (SAFEARRAY/*(LONG        )*/** pVal  ) { return PropArrayGet(_propAryLONG       , VT_I4      , pVal); }
-STDMETHODIMP AutomationTester::get_PropAryLONGLONG   (SAFEARRAY/*(LONGLONG    )*/** pVal  ) { return PropArrayGet(_propAryLONGLONG   , VT_I8      , pVal); }
-STDMETHODIMP AutomationTester::get_PropArySCODE      (SAFEARRAY/*(SCODE       )*/** pVal  ) { return PropArrayGet(_propArySCODE      , VT_ERROR   , pVal); }
-STDMETHODIMP AutomationTester::get_PropArySHORT      (SAFEARRAY/*(SHORT       )*/** pVal  ) { return PropArrayGet(_propArySHORT      , VT_I2      , pVal); }
-STDMETHODIMP AutomationTester::get_PropAryULONG      (SAFEARRAY/*(ULONG       )*/** pVal  ) { return PropArrayGet(_propAryULONG      , VT_UI4     , pVal); }
-STDMETHODIMP AutomationTester::get_PropAryULONGLONG  (SAFEARRAY/*(ULONGLONG   )*/** pVal  ) { return PropArrayGet(_propAryULONGLONG  , VT_UI8     , pVal); }
-STDMETHODIMP AutomationTester::get_PropAryUSHORT     (SAFEARRAY/*(USHORT      )*/** pVal  ) { return PropArrayGet(_propAryUSHORT     , VT_UI2     , pVal); }
-STDMETHODIMP AutomationTester::get_PropAryVARIANTBOOL(SAFEARRAY/*(VARIANT_BOOL)*/** pVal  ) { return PropArrayGet(_propAryVARIANTBOOL, VT_BOOL    , pVal); }
-STDMETHODIMP AutomationTester::get_PropAryDISPATCH   (SAFEARRAY/*(IDispatch*  )*/** pVal  ) { return PropArrayGet(_propAryDISPATCH   , VT_DISPATCH, pVal); }
-STDMETHODIMP AutomationTester::get_PropAryUNKNOWN    (SAFEARRAY/*(IUnknown*   )*/** pVal  ) { return PropArrayGet(_propAryUNKNOWN    , VT_UNKNOWN , pVal); }
+STDMETHODIMP AutomationTester::get_PropAryBSTR       (SAFEARRAY/*(BSTR        )*/** pVal  ) { return PropArrayGet(_propAryBSTR       , pVal); }
+STDMETHODIMP AutomationTester::get_PropAryBYTE       (SAFEARRAY/*(BYTE        )*/** pVal  ) { return PropArrayGet(_propAryBYTE       , pVal); }
+STDMETHODIMP AutomationTester::get_PropAryCHAR       (SAFEARRAY/*(CHAR        )*/** pVal  ) { return PropArrayGet(_propAryCHAR       , pVal); }
+STDMETHODIMP AutomationTester::get_PropAryCY         (SAFEARRAY/*(CY          )*/** pVal  ) { return PropArrayGet(_propAryCY         , pVal); }
+STDMETHODIMP AutomationTester::get_PropAryDATE       (SAFEARRAY/*(DATE        )*/** pVal  ) { return PropArrayGet(_propAryDATE       , pVal); }
+STDMETHODIMP AutomationTester::get_PropAryDECIMAL    (SAFEARRAY/*(DECIMAL     )*/** pVal  ) { return PropArrayGet(_propAryDECIMAL    , pVal); }
+STDMETHODIMP AutomationTester::get_PropAryDOUBLE     (SAFEARRAY/*(DOUBLE      )*/** pVal  ) { return PropArrayGet(_propAryDOUBLE     , pVal); }
+STDMETHODIMP AutomationTester::get_PropAryFLOAT      (SAFEARRAY/*(FLOAT       )*/** pVal  ) { return PropArrayGet(_propAryFLOAT      , pVal); }
+STDMETHODIMP AutomationTester::get_PropAryLONG       (SAFEARRAY/*(LONG        )*/** pVal  ) { return PropArrayGet(_propAryLONG       , pVal); }
+STDMETHODIMP AutomationTester::get_PropAryLONGLONG   (SAFEARRAY/*(LONGLONG    )*/** pVal  ) { return PropArrayGet(_propAryLONGLONG   , pVal); }
+STDMETHODIMP AutomationTester::get_PropArySCODE      (SAFEARRAY/*(SCODE       )*/** pVal  ) { return PropArrayGet(_propArySCODE      , pVal); }
+STDMETHODIMP AutomationTester::get_PropArySHORT      (SAFEARRAY/*(SHORT       )*/** pVal  ) { return PropArrayGet(_propArySHORT      , pVal); }
+STDMETHODIMP AutomationTester::get_PropAryULONG      (SAFEARRAY/*(ULONG       )*/** pVal  ) { return PropArrayGet(_propAryULONG      , pVal); }
+STDMETHODIMP AutomationTester::get_PropAryULONGLONG  (SAFEARRAY/*(ULONGLONG   )*/** pVal  ) { return PropArrayGet(_propAryULONGLONG  , pVal); }
+STDMETHODIMP AutomationTester::get_PropAryUSHORT     (SAFEARRAY/*(USHORT      )*/** pVal  ) { return PropArrayGet(_propAryUSHORT     , pVal); }
+STDMETHODIMP AutomationTester::get_PropAryVARIANTBOOL(SAFEARRAY/*(VARIANT_BOOL)*/** pVal  ) { return PropArrayGet(_propAryVARIANTBOOL, pVal); }
+STDMETHODIMP AutomationTester::get_PropAryDISPATCH   (SAFEARRAY/*(IDispatch*  )*/** pVal  ) { return PropArrayGet(_propAryDISPATCH   , pVal); }
+STDMETHODIMP AutomationTester::get_PropAryUNKNOWN    (SAFEARRAY/*(IUnknown*   )*/** pVal  ) { return PropArrayGet(_propAryUNKNOWN    , pVal); }
 
 STDMETHODIMP AutomationTester::put_PropBSTR       (BSTR         newVal) { _propBSTR        = newVal; return S_OK; }
 STDMETHODIMP AutomationTester::put_PropBYTE       (BYTE         newVal) { _propBYTE        = newVal; return S_OK; }
@@ -191,24 +188,24 @@ STDMETHODIMP AutomationTester::put_PropUNKNOWN    (IUnknown*    newVal)
   if (newVal) newVal->AddRef();
   _propUNKNOWN     = newVal; return S_OK; }
 
-STDMETHODIMP AutomationTester::put_PropAryBSTR       (SAFEARRAY/*(BSTR        )*/*  newVal) { return PropArrayPut(_propAryBSTR       , VT_BSTR    , newVal); }
-STDMETHODIMP AutomationTester::put_PropAryBYTE       (SAFEARRAY/*(BYTE        )*/*  newVal) { return PropArrayPut(_propAryBYTE       , VT_UI1     , newVal); }
-STDMETHODIMP AutomationTester::put_PropAryCHAR       (SAFEARRAY/*(CHAR        )*/*  newVal) { return PropArrayPut(_propAryCHAR       , VT_I1      , newVal); }
-STDMETHODIMP AutomationTester::put_PropAryCY         (SAFEARRAY/*(CY          )*/*  newVal) { return PropArrayPut(_propAryCY         , VT_CY      , newVal); }
-STDMETHODIMP AutomationTester::put_PropAryDATE       (SAFEARRAY/*(DATE        )*/*  newVal) { return PropArrayPut(_propAryDATE       , VT_DATE    , newVal); }
-STDMETHODIMP AutomationTester::put_PropAryDECIMAL    (SAFEARRAY/*(DECIMAL     )*/*  newVal) { return PropArrayPut(_propAryDECIMAL    , VT_DECIMAL , newVal); }
-STDMETHODIMP AutomationTester::put_PropAryDOUBLE     (SAFEARRAY/*(DOUBLE      )*/*  newVal) { return PropArrayPut(_propAryDOUBLE     , VT_R8      , newVal); }
-STDMETHODIMP AutomationTester::put_PropAryFLOAT      (SAFEARRAY/*(FLOAT       )*/*  newVal) { return PropArrayPut(_propAryFLOAT      , VT_R4      , newVal); }
-STDMETHODIMP AutomationTester::put_PropAryLONG       (SAFEARRAY/*(LONG        )*/*  newVal) { return PropArrayPut(_propAryLONG       , VT_I4      , newVal); }
-STDMETHODIMP AutomationTester::put_PropAryLONGLONG   (SAFEARRAY/*(LONGLONG    )*/*  newVal) { return PropArrayPut(_propAryLONGLONG   , VT_I8      , newVal); }
-STDMETHODIMP AutomationTester::put_PropArySCODE      (SAFEARRAY/*(SCODE       )*/*  newVal) { return PropArrayPut(_propArySCODE      , VT_ERROR   , newVal); }
-STDMETHODIMP AutomationTester::put_PropArySHORT      (SAFEARRAY/*(SHORT       )*/*  newVal) { return PropArrayPut(_propArySHORT      , VT_I2      , newVal); }
-STDMETHODIMP AutomationTester::put_PropAryULONG      (SAFEARRAY/*(ULONG       )*/*  newVal) { return PropArrayPut(_propAryULONG      , VT_UI4     , newVal); }
-STDMETHODIMP AutomationTester::put_PropAryULONGLONG  (SAFEARRAY/*(ULONGLONG   )*/*  newVal) { return PropArrayPut(_propAryULONGLONG  , VT_UI8     , newVal); }
-STDMETHODIMP AutomationTester::put_PropAryUSHORT     (SAFEARRAY/*(USHORT      )*/*  newVal) { return PropArrayPut(_propAryUSHORT     , VT_UI2     , newVal); }
-STDMETHODIMP AutomationTester::put_PropAryVARIANTBOOL(SAFEARRAY/*(VARIANT_BOOL)*/*  newVal) { return PropArrayPut(_propAryVARIANTBOOL, VT_BOOL    , newVal); }
-STDMETHODIMP AutomationTester::put_PropAryDISPATCH   (SAFEARRAY/*(IDispatch*  )*/*  newVal) { return PropArrayPut(_propAryDISPATCH   , VT_DISPATCH, newVal); }
-STDMETHODIMP AutomationTester::put_PropAryUNKNOWN    (SAFEARRAY/*(IUnknown*   )*/*  newVal) { return PropArrayPut(_propAryUNKNOWN    , VT_UNKNOWN , newVal); }
+STDMETHODIMP AutomationTester::put_PropAryBSTR       (SAFEARRAY/*(BSTR        )*/*  newVal) { return PropArrayPut(_propAryBSTR       , newVal); }
+STDMETHODIMP AutomationTester::put_PropAryBYTE       (SAFEARRAY/*(BYTE        )*/*  newVal) { return PropArrayPut(_propAryBYTE       , newVal); }
+STDMETHODIMP AutomationTester::put_PropAryCHAR       (SAFEARRAY/*(CHAR        )*/*  newVal) { return PropArrayPut(_propAryCHAR       , newVal); }
+STDMETHODIMP AutomationTester::put_PropAryCY         (SAFEARRAY/*(CY          )*/*  newVal) { return PropArrayPut(_propAryCY         , newVal); }
+STDMETHODIMP AutomationTester::put_PropAryDATE       (SAFEARRAY/*(DATE        )*/*  newVal) { return PropArrayPut(_propAryDATE       , newVal); }
+STDMETHODIMP AutomationTester::put_PropAryDECIMAL    (SAFEARRAY/*(DECIMAL     )*/*  newVal) { return PropArrayPut(_propAryDECIMAL    , newVal); }
+STDMETHODIMP AutomationTester::put_PropAryDOUBLE     (SAFEARRAY/*(DOUBLE      )*/*  newVal) { return PropArrayPut(_propAryDOUBLE     , newVal); }
+STDMETHODIMP AutomationTester::put_PropAryFLOAT      (SAFEARRAY/*(FLOAT       )*/*  newVal) { return PropArrayPut(_propAryFLOAT      , newVal); }
+STDMETHODIMP AutomationTester::put_PropAryLONG       (SAFEARRAY/*(LONG        )*/*  newVal) { return PropArrayPut(_propAryLONG       , newVal); }
+STDMETHODIMP AutomationTester::put_PropAryLONGLONG   (SAFEARRAY/*(LONGLONG    )*/*  newVal) { return PropArrayPut(_propAryLONGLONG   , newVal); }
+STDMETHODIMP AutomationTester::put_PropArySCODE      (SAFEARRAY/*(SCODE       )*/*  newVal) { return PropArrayPut(_propArySCODE      , newVal); }
+STDMETHODIMP AutomationTester::put_PropArySHORT      (SAFEARRAY/*(SHORT       )*/*  newVal) { return PropArrayPut(_propArySHORT      , newVal); }
+STDMETHODIMP AutomationTester::put_PropAryULONG      (SAFEARRAY/*(ULONG       )*/*  newVal) { return PropArrayPut(_propAryULONG      , newVal); }
+STDMETHODIMP AutomationTester::put_PropAryULONGLONG  (SAFEARRAY/*(ULONGLONG   )*/*  newVal) { return PropArrayPut(_propAryULONGLONG  , newVal); }
+STDMETHODIMP AutomationTester::put_PropAryUSHORT     (SAFEARRAY/*(USHORT      )*/*  newVal) { return PropArrayPut(_propAryUSHORT     , newVal); }
+STDMETHODIMP AutomationTester::put_PropAryVARIANTBOOL(SAFEARRAY/*(VARIANT_BOOL)*/*  newVal) { return PropArrayPut(_propAryVARIANTBOOL, newVal); }
+STDMETHODIMP AutomationTester::put_PropAryDISPATCH   (SAFEARRAY/*(IDispatch*  )*/*  newVal) { return PropArrayPut(_propAryDISPATCH   , newVal); }
+STDMETHODIMP AutomationTester::put_PropAryUNKNOWN    (SAFEARRAY/*(IUnknown*   )*/*  newVal) { return PropArrayPut(_propAryUNKNOWN    , newVal); }
 
 // METHODS
 
@@ -337,10 +334,11 @@ STDMETHODIMP AutomationTester::testDECIMAL(DECIMAL valIn, DECIMAL* refIn, DECIMA
     if ((hrCompare != VARCMP_EQ) &&
         (!Ensure(TextAppend(L"\tWARN: valIn != refIn")))) return E_FAIL;
     
-    DECIMAL decTwo = {0, {0, 0}, 0, {2, 0}}, decOut;
-    VarDecDiv(refInOut, &decTwo, refRet );
+    DECIMAL decTwo = {0, {0, 0}, 0, {2, 0}}, decOut, decRet;
+    VarDecDiv(refInOut, &decTwo, &decRet);
     VarDecMul(refInOut, &decTwo, &decOut);
     
+    *refRet   = decRet;
     *refInOut = decOut;
     
     return S_OK;

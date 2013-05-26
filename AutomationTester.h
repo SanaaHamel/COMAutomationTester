@@ -2,6 +2,7 @@
 #pragma once
 #include "resource.h"       // main symbols
 #include <atlctl.h>
+#include <atlsafe.h>
 #include "COMAutomationTester_i.h"
 #include "_IAutomationTesterEvents_CP.h"
 
@@ -343,24 +344,24 @@ private:
     VARIANT_BOOL _propVARIANTBOOL;
     IDispatch*   _propDISPATCH   ;
     IUnknown*    _propUNKNOWN    ;
-    SAFEARRAY/*(BSTR        )*/* _propAryBSTR       ;
-    SAFEARRAY/*(BYTE        )*/* _propAryBYTE       ;
-    SAFEARRAY/*(CHAR        )*/* _propAryCHAR       ;
-    SAFEARRAY/*(CY          )*/* _propAryCY         ;
-    SAFEARRAY/*(DATE        )*/* _propAryDATE       ;
-    SAFEARRAY/*(DECIMAL     )*/* _propAryDECIMAL    ;
-    SAFEARRAY/*(DOUBLE      )*/* _propAryDOUBLE     ;
-    SAFEARRAY/*(FLOAT       )*/* _propAryFLOAT      ;
-    SAFEARRAY/*(LONG        )*/* _propAryLONG       ;
-    SAFEARRAY/*(LONGLONG    )*/* _propAryLONGLONG   ;
-    SAFEARRAY/*(SCODE       )*/* _propArySCODE      ;
-    SAFEARRAY/*(SHORT       )*/* _propArySHORT      ;
-    SAFEARRAY/*(ULONG       )*/* _propAryULONG      ;
-    SAFEARRAY/*(ULONGLONG   )*/* _propAryULONGLONG  ;
-    SAFEARRAY/*(USHORT      )*/* _propAryUSHORT     ;
-    SAFEARRAY/*(VARIANT_BOOL)*/* _propAryVARIANTBOOL;
-    SAFEARRAY/*(IDispatch*  )*/* _propAryDISPATCH   ;
-    SAFEARRAY/*(IUnknown*   )*/* _propAryUNKNOWN    ;
+    CComSafeArray<BSTR        > _propAryBSTR       ;
+    CComSafeArray<BYTE        > _propAryBYTE       ;
+    CComSafeArray<CHAR        > _propAryCHAR       ;
+    CComSafeArray<CY          > _propAryCY         ;
+    CComSafeArray<DATE        > _propAryDATE       ;
+    CComSafeArray<DECIMAL     > _propAryDECIMAL    ;
+    CComSafeArray<DOUBLE      > _propAryDOUBLE     ;
+    CComSafeArray<FLOAT       > _propAryFLOAT      ;
+    CComSafeArray<LONG        > _propAryLONG       ;
+    CComSafeArray<LONGLONG    > _propAryLONGLONG   ;
+    CComSafeArray<SCODE       > _propArySCODE      ;
+    CComSafeArray<SHORT       > _propArySHORT      ;
+    CComSafeArray<ULONG       > _propAryULONG      ;
+    CComSafeArray<ULONGLONG   > _propAryULONGLONG  ;
+    CComSafeArray<USHORT      > _propAryUSHORT     ;
+    CComSafeArray<VARIANT_BOOL> _propAryVARIANTBOOL;
+    CComSafeArray<IDispatch*  > _propAryDISPATCH   ;
+    CComSafeArray<IUnknown*   > _propAryUNKNOWN    ;
 };
 
 OBJECT_ENTRY_AUTO(__uuidof(AutomationTester), AutomationTester)
